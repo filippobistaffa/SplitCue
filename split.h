@@ -24,7 +24,7 @@
 #define TEMP_CUE "/tmp/temp.cue"
 #define SPLIT_PREFIX "split-track"
 #define DESTINATION "/media/music"
-#define GENRES_FILE "/media/backup/programs/.genres"
+#define GENRES_FILE "/home/filippo/Dropbox/apps/.genres"
 
 #define FORMAT "flac"
 #define EXE "splitcue"
@@ -34,9 +34,10 @@
 
 typedef struct
 {
-	char *title;
 	char *artist;
+	char *title;
 	char *genre;
+	char *cover;
 	char *year;
 	char *file;
 	GtkListStore *songs;
@@ -51,8 +52,10 @@ typedef struct
 	GtkWidget *progress;
 	GtkWidget *controls;
 	GtkWidget *spinner;
+	GtkWidget *window;
 	GtkWidget *button;
 	GtkWidget *offset;
+	GtkWidget *cover;
 } widgets_data;
 
 typedef struct

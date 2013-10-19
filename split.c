@@ -113,13 +113,17 @@ void *thread_split(void *thread_data)
 	process_file(data->album->file);
 	
 	//copy_songs(data);
-	GtkWidget *icon = gtk_image_new_from_icon_name(OK_ICON, GTK_ICON_SIZE_BUTTON);
+	GtkWidget *icon1 = gtk_image_new_from_icon_name(OK_ICON, GTK_ICON_SIZE_BUTTON);	
+	GtkWidget *icon2 = gtk_image_new_from_icon_name(GTK_STOCK_SELECT_COLOR, GTK_ICON_SIZE_BUTTON);
 	gdk_threads_enter();
 	gtk_spinner_stop(GTK_SPINNER(data->widgets->spinner));	
 	//gtk_widget_hide(data->widgets->spinner);
 	gtk_widget_destroy(data->widgets->spinner);
-	gtk_table_attach(GTK_TABLE(data->widgets->controls), icon, 0, 1, 0, 1, (GtkAttachOptions) (GTK_FILL), (GtkAttachOptions) (GTK_FILL), 0, 0);
-	gtk_widget_show(icon);
+	gtk_table_attach(GTK_TABLE(data->widgets->controls), icon1, 0, 1, 0, 1, (GtkAttachOptions) (GTK_FILL), (GtkAttachOptions) (GTK_FILL), 0, 0);
+	gtk_widget_show(icon1);
+	gtk_widget_destroy(data->widgets->cover);
+	gtk_table_attach(GTK_TABLE(data->widgets->controls), icon2, 2, 3, 0, 1, (GtkAttachOptions) (GTK_FILL), (GtkAttachOptions) (GTK_FILL), 0, 0);
+	gtk_widget_show(icon2);
 	gtk_button_set_label(GTK_BUTTON(data->widgets->button), "Done");
 	//gtk_widget_set_sensitive(data->widgets->button, TRUE);
 	//g_signal_connect(data->widgets->button, "clicked", G_CALLBACK(free_all), data);
@@ -157,6 +161,20 @@ static void select_file(GtkWidget *widget, prog_data *data)
 		gtk_widget_show(data->widgets->spinner);
 	}
 	
+	gtk_widget_destroy(dialog);
+}
+
+static void enter_cover(GtkWidget *widget, prog_data *data)
+{
+	GtkWidget *entry = gtk_entry_new();
+	if (data->album->cover) gtk_entry_set_text (GTK_ENTRY(entry), data->album->cover);
+	GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(data->widgets->window), GTK_DIALOG_DESTROY_WITH_PARENT|GTK_DIALOG_MODAL, GTK_MESSAGE_OTHER, GTK_BUTTONS_OK, "Enter cover art URL:", NULL);
+	gtk_message_dialog_set_image(GTK_MESSAGE_DIALOG(dialog), gtk_image_new_from_icon_name(GTK_STOCK_SELECT_COLOR, GTK_ICON_SIZE_BUTTON));
+	gtk_container_add(GTK_CONTAINER(gtk_message_dialog_get_message_area(GTK_MESSAGE_DIALOG(dialog))), entry);
+	gtk_widget_show_all(gtk_message_dialog_get_message_area(GTK_MESSAGE_DIALOG(dialog)));
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	data->album->cover = realloc(data->album->cover, gtk_entry_get_text_length(GTK_ENTRY(entry)));
+	strcpy(data->album->cover, gtk_entry_get_text(GTK_ENTRY(entry)));
 	gtk_widget_destroy(dialog);
 }
 
@@ -270,8 +288,6 @@ int main(int argc, char *argv[])
 	prog_data *data = malloc(sizeof(prog_data));
 	data->widgets = malloc(sizeof(widgets_data));
 	data->album = calloc(1, sizeof(album_data));
-	//data->album->genre = NULL;
-	//data->album->year = NULL;
 	data->widgets->progress = gtk_progress_bar_new();
 	
 	if (parse_cue(argv[1], data)) return 1;
@@ -283,17 +299,17 @@ int main(int argc, char *argv[])
 	g_set_application_name(NAME);
 	gtk_window_set_default_icon_name(ICON);
 	
-	GtkWidget *window, *box, *table, *bottom, *separator, *songlist, *title_label, *artist_label;
+	GtkWidget *box, *table, *bottom, *separator, *songlist, *title_label, *artist_label;
 	GtkAdjustment *adj;
 	
 	// window
 	
-	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
-	gtk_container_set_border_width(GTK_CONTAINER(window), 10);
+	data->widgets->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_resizable(GTK_WINDOW(data->widgets->window), FALSE);
+	gtk_container_set_border_width(GTK_CONTAINER(data->widgets->window), 10);
 	
-	g_signal_connect(window, "delete-event", G_CALLBACK(free_all), data);
-	g_signal_connect(window, "destroy", G_CALLBACK (destroy), NULL);
+	g_signal_connect(data->widgets->window, "delete-event", G_CALLBACK(free_all), data);
+	g_signal_connect(data->widgets->window, "destroy", G_CALLBACK (destroy), NULL);
 	
 	// table
 	
@@ -319,6 +335,7 @@ int main(int argc, char *argv[])
 	if (data->album->artist) 
 	{
 		gtk_entry_set_text(GTK_ENTRY(data->widgets->artist_entry), data->album->artist);
+		printf("%s\n", data->album->artist);
 		free(data->album->artist);
 	}
 	
@@ -342,6 +359,12 @@ int main(int argc, char *argv[])
 	
 	data->widgets->button = gtk_button_new_with_mnemonic("_Split");
 	g_signal_connect(data->widgets->button, "clicked", G_CALLBACK(button_clicked), data);
+
+	// cover
+
+	data->widgets->cover = gtk_button_new();
+	gtk_button_set_image(GTK_BUTTON(data->widgets->cover), gtk_image_new_from_icon_name(GTK_STOCK_SELECT_COLOR, GTK_ICON_SIZE_BUTTON));
+	g_signal_connect(data->widgets->cover, "clicked", G_CALLBACK(enter_cover), data);
 	
 	// combobox
 	
@@ -354,7 +377,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 	
-	int i = 0, j;
+	int i = 0, j = 0;
 	char line[SIZE];
 	bool set = FALSE;
 	
@@ -389,21 +412,23 @@ int main(int argc, char *argv[])
 	
 	// containers
 	
-	box = gtk_vbox_new(FALSE, 10);
-	bottom = gtk_hbox_new(FALSE, 10);
-	separator = gtk_hseparator_new();
+	box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+	bottom = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+	separator = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
 	
 	// controls
 	
-	data->widgets->controls = gtk_table_new(1, 2, FALSE);
+	data->widgets->controls = gtk_table_new(1, 3, FALSE);
 	gtk_table_set_col_spacings(GTK_TABLE(data->widgets->controls), 10);
 	gtk_table_attach(GTK_TABLE(data->widgets->controls), data->widgets->button, 1, 2, 0, 1, 
 			(GtkAttachOptions) (GTK_EXPAND | GTK_FILL), (GtkAttachOptions) (0), 0, 0);
 	gtk_table_attach(GTK_TABLE(data->widgets->controls), data->widgets->spinner, 0, 1, 0, 1, 
 			(GtkAttachOptions) (GTK_FILL), (GtkAttachOptions) (GTK_FILL), 0, 0);
+	gtk_table_attach(GTK_TABLE(data->widgets->controls), data->widgets->cover, 2, 3, 0, 1, 
+			(GtkAttachOptions) (GTK_FILL), (GtkAttachOptions) (GTK_FILL), 0, 0);
 	
 	// add
-	box = gtk_vbox_new(FALSE, 10);
+	box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
 	gtk_container_add(GTK_CONTAINER(bottom), data->widgets->combobox);
 	gtk_container_add(GTK_CONTAINER(bottom), data->widgets->spin_button);
 	gtk_container_add(GTK_CONTAINER(bottom), data->widgets->offset);
@@ -413,13 +438,13 @@ int main(int argc, char *argv[])
 	gtk_container_add(GTK_CONTAINER(box), data->widgets->progress);
 	gtk_container_add(GTK_CONTAINER(box), separator);
 	gtk_container_add(GTK_CONTAINER(box), data->widgets->controls);
-	gtk_container_add(GTK_CONTAINER(window), box);
-	gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
+	gtk_container_add(GTK_CONTAINER(data->widgets->window), box);
+	gtk_window_set_position(GTK_WINDOW(data->widgets->window), GTK_WIN_POS_CENTER);
 	gtk_widget_grab_focus(data->widgets->button);
 	
 	// show
 	
-	gtk_widget_show_all(window);
+	gtk_widget_show_all(data->widgets->window);
 	gdk_threads_enter();
 	gtk_main();
 	gdk_threads_leave();

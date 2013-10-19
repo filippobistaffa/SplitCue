@@ -16,6 +16,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#include <curl/curl.h>
 #include <ctype.h>
 #include <string.h>
 #include <gtk/gtk.h>
@@ -229,7 +230,31 @@ static void adjust_for_leadinout(wlong leadin_bytes,wlong leadout_bytes)
   }
 }
 
-bool set_metadata(char *filename, char *artist, char *album, char *genre, char *year, char *song, char *number)
+struct cover_struct {
+	char *data;
+	size_t size;
+};
+
+static size_t download(void *contents, size_t size, size_t nmemb, void *userp)
+{
+  size_t realsize = size * nmemb;
+  struct cover_struct *mem = (struct cover_struct *)userp;
+ 
+  mem->data = realloc(mem->data, mem->size + realsize + 1);
+  if (mem->data == NULL) {
+    /* out of memory! */ 
+    printf("not enough memory (realloc returned NULL)\n");
+    exit(EXIT_FAILURE);
+  }
+ 
+  memcpy(&(mem->data[mem->size]), contents, realsize);
+  mem->size += realsize;
+  mem->data[mem->size] = 0;
+ 
+  return realsize;
+}
+
+bool set_metadata(char *filename, char *artist, char *album, char *genre, char *year, char *song, char *number, struct cover_struct chunk)
 {
 	FLAC__StreamMetadata *metadata = FLAC__metadata_object_new(FLAC__METADATA_TYPE_VORBIS_COMMENT);
 	FLAC__Metadata_SimpleIterator *iter = FLAC__metadata_simple_iterator_new();
@@ -251,8 +276,15 @@ bool set_metadata(char *filename, char *artist, char *album, char *genre, char *
 	}
 	
 	if (!FLAC__metadata_simple_iterator_insert_block_after(iter, metadata, TRUE)) return FALSE;
-	FLAC__metadata_simple_iterator_delete(iter);
 	FLAC__metadata_object_delete(metadata);
+	
+	metadata = FLAC__metadata_object_new(FLAC__METADATA_TYPE_PICTURE);
+	FLAC__metadata_object_picture_set_mime_type(metadata, "image/jpeg", TRUE);
+	FLAC__metadata_object_picture_set_data(metadata, (FLAC__byte *) chunk.data, chunk.size, TRUE);
+	
+	if (!FLAC__metadata_simple_iterator_insert_block_after(iter, metadata, TRUE)) return FALSE;
+	FLAC__metadata_object_delete(metadata);
+	FLAC__metadata_simple_iterator_delete(iter);
 	return TRUE;
 }
 
@@ -303,6 +335,21 @@ static bool split_file(wave_info *info)
   GtkTreeIter iter;
   
   prog_data *data = st_priv.data; 
+
+  curl_global_init(CURL_GLOBAL_ALL);
+  CURL *handle = curl_easy_init();
+
+  struct cover_struct chunk;
+  chunk.data = malloc(1);
+  chunk.size = 0;
+
+  curl_easy_setopt(handle, CURLOPT_URL, data->album->cover);
+  curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, download);
+  curl_easy_setopt(handle, CURLOPT_WRITEDATA, (void *)&chunk);
+ 
+  curl_easy_perform(handle);
+  curl_easy_cleanup(handle);
+  curl_global_cleanup();
   
   gtk_tree_model_get_iter_first(GTK_TREE_MODEL(data->album->songs), &iter);
   char *artist = (char *)gtk_entry_get_text(GTK_ENTRY(data->widgets->artist_entry));
@@ -435,7 +482,7 @@ static bool split_file(wave_info *info)
     
     // NEW
     
-    set_metadata(outfilename, artist, title, genre, year, song, n);
+    set_metadata(outfilename, artist, title, genre, year, song, n, chunk);
     free(song);
     
     //
@@ -444,6 +491,7 @@ static bool split_file(wave_info *info)
   }
   
   g_free(genre);
+  free(chunk.data);
 
   close_input_stream(info);
 
