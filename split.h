@@ -1,6 +1,9 @@
 #include <time.h>
+#include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
+#include <libgen.h>
+#include <unistd.h>
 #include <gtk/gtk.h>
 #include <pthread.h>
 #include <sys/stat.h>
