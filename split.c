@@ -307,7 +307,7 @@ int main(int argc, char *argv[])
 	data->widgets->progress = gtk_progress_bar_new();
 	
 	if (parse_cue(argv[1], data)) return 1;
-	
+	chdir(dirname(argv[1]));
 	time_t rawtime;
 	time(&rawtime);
 	
