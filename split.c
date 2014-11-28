@@ -183,6 +183,21 @@ int begins_with(char *s, char *tag)
 	return (s == strstr(s, tag));
 }
 
+#define UPC(c) ((c) = (isalpha(c) ? toupper(c) : c))
+#define LOC(c) ((c) = (isalpha(c) ? tolower(c) : c))
+
+void capitalise(char *s, size_t n) {
+
+	UPC(*s);
+	s++;
+
+	while (--n) {
+		if (*(s - 1) == ' ' || *(s - 1) == '(' || *(s - 1) == '-') UPC(*s);
+		else LOC(*s);
+		s++;
+	}
+}
+
 char *get_info(char *s, char *tag, int eol)
 {	
 	char *r;
@@ -192,6 +207,7 @@ char *get_info(char *s, char *tag, int eol)
 	l = MIN(SIZE, strlen(s) - strlen(tag) - 2 * i - eol);
 	r = calloc(l + 1, 1);
 	strncpy(r, s + strlen(tag) + i, l);
+	capitalise(r, l);
 	return r;
 }
 
