@@ -22,7 +22,7 @@ void *thread_split(void *thread_data) {
 	GtkWidget *icon1 = gtk_image_new_from_icon_name(OK_ICON, GTK_ICON_SIZE_BUTTON);
 	GtkWidget *icon2 = gtk_image_new_from_icon_name(GTK_STOCK_SELECT_COLOR, GTK_ICON_SIZE_BUTTON);
 	gdk_threads_enter();
-	gtk_spinner_stop(GTK_SPINNER(data->widgets->spinner))
+	gtk_spinner_stop(GTK_SPINNER(data->widgets->spinner));
 	//gtk_widget_hide(data->widgets->spinner);
 	gtk_widget_destroy(data->widgets->spinner);
 	gtk_table_attach(GTK_TABLE(data->widgets->controls), icon1, 0, 1, 0, 1, (GtkAttachOptions) (GTK_FILL), (GtkAttachOptions) (GTK_FILL), 0, 0);

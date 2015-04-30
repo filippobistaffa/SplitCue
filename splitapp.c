@@ -50,5 +50,5 @@ static void split_app_class_init(SplitAppClass *class) {
 
 SplitApp *split_app_new(void) {
 
-	return g_object_new(SPLIT_APP_TYPE, "application-id", "org.gtk.SplitApp", "flags", G_APPLICATION_HANDLES_OPEN, NULL);
+	return g_object_new(SPLIT_APP_TYPE, "application-id", "org.gtk.SplitApp", "flags", G_APPLICATION_HANDLES_OPEN | G_APPLICATION_NON_UNIQUE, NULL);
 }
