@@ -311,7 +311,7 @@ void modules_init()
   }
 }
 
-void globals_init(char *program, prog_data *data)
+void globals_init(char *program, SplitAppWindowPrivate *data)
 {
   char *p;
   int n;

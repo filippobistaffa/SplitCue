@@ -334,7 +334,7 @@ static bool split_file(wave_info *info)
   char *song, year[5], n[3];
   GtkTreeIter iter;
   
-  prog_data *data = st_priv.data; 
+  SplitAppWindowPrivate *data = st_priv.data; 
 
   curl_global_init(CURL_GLOBAL_ALL);
   CURL *handle = curl_easy_init();

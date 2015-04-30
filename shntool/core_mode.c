@@ -429,7 +429,7 @@ static wlong is_m_ss_nnn(unsigned char *buf,wave_info *info)
 /* Compare strings while treating digits characters numerically.
    Copyright (C) 1997, 2000 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
-   Contributed by Jean-François Bignolles <bignolle@ecoledoc.ibp.fr>, 1997.
+   Contributed by Jean-Francois Bignolles <bignolle@ecoledoc.ibp.fr>, 1997.
 
    The GNU C Library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Library General Public License as
@@ -1617,7 +1617,7 @@ void prog_success(progress_info *proginfo)
 {
   proginfo->bytes_written = proginfo->bytes_total;
   prog_update(proginfo);
-  GtkProgressBar *progress = GTK_PROGRESS_BAR(((prog_data *)st_priv.data)->widgets->progress);
+  GtkProgressBar *progress = GTK_PROGRESS_BAR(((SplitAppWindowPrivate *)st_priv.data)->widgets->progress);
   gdk_threads_enter();
   gtk_progress_bar_set_fraction(progress, MIN(1.0, gtk_progress_bar_get_fraction(progress) + gtk_progress_bar_get_pulse_step(progress)));
   gdk_threads_leave();

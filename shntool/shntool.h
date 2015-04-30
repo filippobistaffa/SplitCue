@@ -37,7 +37,7 @@
 
 #include "mode_split.h"
 
-void globals_init(char *, prog_data *);
+void globals_init(char *, SplitAppWindowPrivate *);
 //bool parse_main(int, char **);
 void modules_init();
 

@@ -26,7 +26,7 @@
 
 #define TEMP_CUE "/tmp/temp.cue"
 #define SPLIT_PREFIX "split-track"
-#define DESTINATION "/media/music"
+#define DESTINATION "/media/filippo/music"
 #define GENRES_FILE "/home/filippo/Dropbox/apps/.genres"
 
 #define FORMAT "flac"
@@ -35,35 +35,14 @@
 
 #define TAG_NUMBER 6
 
-typedef struct
-{
-	char *artist;
-	char *title;
-	char *genre;
-	char *cover;
-	char *year;
-	char *file;
-	GtkListStore *songs;
-} album_data;
+#define begins_with(s, tag) (s == strstr(s, tag))
 
-typedef struct
-{
-	GtkWidget *artist_entry;
-	GtkWidget *title_entry;
-	GtkWidget *spin_button;
-	GtkWidget *combobox;
-	GtkWidget *progress;
-	GtkWidget *controls;
-	GtkWidget *spinner;
-	GtkWidget *window;
-	GtkWidget *button;
-	GtkWidget *offset;
-	GtkWidget *cover;
-} widgets_data;
+#include "splitapp.h"
+#include "splitappwindow.h"
+#include "types.h"
 
-typedef struct
-{
-	widgets_data *widgets;
-	album_data *album;
-//	GtkListStore *genres;
-} prog_data;
+int parse_cue(char *filename, SplitAppWindowPrivate *data);
+void song_edited(GtkCellRendererText *cell, char *id, char *value, GtkListStore *songs);
+void button_clicked(GtkWidget *widget, SplitAppWindowPrivate *data);
+void select_file(GtkWidget *widget, SplitAppWindowPrivate *data);
+void enter_cover(GtkWidget *widget, SplitAppWindowPrivate *data);
