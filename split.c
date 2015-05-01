@@ -106,7 +106,7 @@ char *get_info(char *s, char *tag, int eol) {
 	l = MIN(SIZE, strlen(s) - strlen(tag) - 2 * i - eol);
 	r = calloc(l + 1, 1);
 	strncpy(r, s + strlen(tag) + i, l);
-	capitalise(r, l);
+	if (strcmp(tag, FILE_TAG)) capitalise(r, l);
 	return r;
 }
 
