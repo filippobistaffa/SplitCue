@@ -72,13 +72,13 @@ void select_file(GtkWidget *widget, SplitAppWindowPrivate *data) {
 void enter_cover(GtkWidget *widget, SplitAppWindowPrivate *data) {
 
 	GtkWidget *entry = gtk_entry_new();
-	if (data->album->cover) gtk_entry_set_text (GTK_ENTRY(entry), data->album->cover);
+	if (data->album->cover) gtk_entry_set_text(GTK_ENTRY(entry), data->album->cover);
 	GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(data->widgets->window), GTK_DIALOG_DESTROY_WITH_PARENT|GTK_DIALOG_MODAL, GTK_MESSAGE_OTHER, GTK_BUTTONS_OK, "Enter cover art URL:");
 	gtk_message_dialog_set_image(GTK_MESSAGE_DIALOG(dialog), gtk_image_new_from_icon_name(GTK_STOCK_SELECT_COLOR, GTK_ICON_SIZE_BUTTON));
 	gtk_container_add(GTK_CONTAINER(gtk_message_dialog_get_message_area(GTK_MESSAGE_DIALOG(dialog))), entry);
 	gtk_widget_show_all(gtk_message_dialog_get_message_area(GTK_MESSAGE_DIALOG(dialog)));
 	gtk_dialog_run(GTK_DIALOG(dialog));
-	data->album->cover = realloc(data->album->cover, gtk_entry_get_text_length(GTK_ENTRY(entry)));
+	data->album->cover = realloc(data->album->cover, gtk_entry_get_text_length(GTK_ENTRY(entry)) + 1);
 	strcpy(data->album->cover, gtk_entry_get_text(GTK_ENTRY(entry)));
 	gtk_widget_destroy(dialog);
 }
