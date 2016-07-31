@@ -8,6 +8,3 @@ OUT=../splitcue
 
 all:
 	${CMP} ${OPT} ${FILES} ${LIBS} -o ${OUT}
-
-run:
-	${OUT} ~/test.cue
