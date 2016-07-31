@@ -2,7 +2,7 @@ SplitCue
 ===================
 SplitCue is a GTK3 program to split an audio image into the single songs given the CUE file.
 
-![screenshot](http://i.imgur.com/kZaEYfQ.png)
+<p align="center"><img src="http://i.imgur.com/kZaEYfQ.png" width="530" /></p>
 
 Execution
 ----------
